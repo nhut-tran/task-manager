@@ -1,7 +1,8 @@
 const express = require('express');
 const User = require('../models/user')
 const auth= require('../middleware/auth')
-const multer= require('multer')
+const multer= require('multer');
+const sharp = require('sharp')
 const router = new express.Router()
 router.post('/user', async (req, res)=> {
     const user = new User(req.body);
@@ -106,19 +107,23 @@ router.post('/user', async (req, res)=> {
      }
  })
  router.post('/user/me/avatar',auth, uploadAvatar.single('nhut'), async (req, res)=> {
-     req.user.avatar = req.file.buffer
+    const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer()
+    req.user.avatar = buffer
      await req.user.save()
      res.send()
  }, (error, req, res, next)=> {
      res.status(400).send({err: error.message})
  })
 
- router.get('/user/me/avatar/send', auth, async (req, res)=> {
-     if(!req.user.avatar) {
+ router.get('/user/:id/avatar', async (req, res)=> {
+        const _id = req.params.id;
+        const user = await User.findOne({_id});
+        console.log(user)
+     if(!user) {
             throw new Error()
      }
      res.set('Content-type', 'image/jpg')
-     res.send(req.user.avatar)
+     res.send(user.avatar)
  })
 
  router.delete('/user/me/avatar', auth, async (req, res) => {

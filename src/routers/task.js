@@ -28,7 +28,7 @@ router.get('/task', auth, async (req, res)=> {
         skip: parseInt(req.query.skip),
         sort
     })
-    res.send(task)
+    res.send(task);
 
     // try {
     //     const task = await Task.find({owner: req.user._id}, null, {
